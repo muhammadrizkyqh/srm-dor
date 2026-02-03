@@ -7,12 +7,17 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Supabase Configuration
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-# Encryption Key
-ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
+# Try to use Streamlit secrets first (for Streamlit Cloud), fallback to .env
+try:
+    import streamlit as st
+    SUPABASE_URL = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL"))
+    SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.getenv("SUPABASE_KEY"))
+    ENCRYPTION_KEY = st.secrets.get("ENCRYPTION_KEY", os.getenv("ENCRYPTION_KEY"))
+except:
+    # Fallback to environment variables (for local development)
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+    ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
 # App Configuration
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
