@@ -10,10 +10,13 @@ load_dotenv()
 # Try to use Streamlit secrets first (for Streamlit Cloud), fallback to .env
 try:
     import streamlit as st
-    SUPABASE_URL = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL"))
-    SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.getenv("SUPABASE_KEY"))
-    ENCRYPTION_KEY = st.secrets.get("ENCRYPTION_KEY", os.getenv("ENCRYPTION_KEY"))
-except:
+    if hasattr(st, 'secrets') and st.secrets:
+        SUPABASE_URL = st.secrets["SUPABASE_URL"]
+        SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+        ENCRYPTION_KEY = st.secrets["ENCRYPTION_KEY"]
+    else:
+        raise KeyError("Secrets not available")
+except (ImportError, KeyError, FileNotFoundError):
     # Fallback to environment variables (for local development)
     SUPABASE_URL = os.getenv("SUPABASE_URL")
     SUPABASE_KEY = os.getenv("SUPABASE_KEY")
