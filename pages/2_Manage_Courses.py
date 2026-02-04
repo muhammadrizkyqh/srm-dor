@@ -246,7 +246,7 @@ if selected_account:
             study_program_id = st.number_input("Study Program ID", min_value=1, value=117, help="Default: 117 (Informatika S1)")
         
         with col2:
-            semester = st.number_input("Semester", min_value=1, max_value=8, value=2, help="Current semester")
+            semester = st.number_input("Tingkat", min_value=1, max_value=8, value=2, help="Tingkat semester (1-8)")
         
         with col3:
             show_full_only = st.checkbox("Hide full courses", value=True)
