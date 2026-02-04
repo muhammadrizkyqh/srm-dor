@@ -39,10 +39,6 @@ with tab1:
                     st.write(f"**Name:** {account['name'] or 'Not set'}")
                     st.write(f"**Status:** {account['status'].upper()}")
                     
-                    # Get course targets count
-                    targets = st.session_state.supabase.get_course_targets(account['id'])
-                    st.write(f"**Target Courses:** {len(targets)}")
-                    
                     # Get stats
                     stats = st.session_state.supabase.get_enrollment_stats(account['id'])
                     st.write(f"**Total Enrollments:** {stats['success']}/{stats['total']}")
