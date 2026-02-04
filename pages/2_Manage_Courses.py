@@ -147,6 +147,112 @@ if selected_account:
             
             st.markdown("")
             
+            # Add schedule preview button
+            if st.button("📅 Preview Schedule", use_container_width=True, type="secondary"):
+                with st.spinner("Loading schedule..."):
+                    schedule_result = client.get_schedule()
+                    if schedule_result['success']:
+                        st.session_state[f'schedule_{selected_account_id}'] = schedule_result.get('schedule', [])
+                        st.session_state[f'show_schedule_{selected_account_id}'] = True
+                        st.rerun()
+                    else:
+                        show_error(f"Failed to load schedule: {schedule_result.get('message')}")
+            
+            # Display schedule if loaded
+            if st.session_state.get(f'show_schedule_{selected_account_id}', False):
+                schedule_data = st.session_state.get(f'schedule_{selected_account_id}', [])
+                
+                if schedule_data:
+                    st.markdown("### 📅 Weekly Schedule Preview")
+                    
+                    # Close button
+                    if st.button("❌ Close Schedule", use_container_width=True):
+                        st.session_state[f'show_schedule_{selected_account_id}'] = False
+                        st.rerun()
+                    
+                    # Create schedule table
+                    import pandas as pd
+                    
+                    # Days of week
+                    days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+                    day_labels = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+                    
+                    # Detect conflicts
+                    conflicts = []
+                    for shift in schedule_data:
+                        time = shift.get('shift_time', 'N/A')
+                        shift_data = shift.get('shift_data', {})
+                        for day, day_label in zip(days, day_labels):
+                            courses = shift_data.get(day, [])
+                            if len(courses) > 1:  # Conflict detected!
+                                course_details = []
+                                for c in courses:
+                                    course_name = c.get('course_name', 'Unknown')
+                                    start = c.get('start_hour', 'N/A')
+                                    end = c.get('end_hour', 'N/A')
+                                    course_details.append(f"{course_name} ({start}-{end})")
+                                conflicts.append({
+                                    'day': day_label,
+                                    'time': time,
+                                    'courses': course_details
+                                })
+                    
+                    # Show conflict warning
+                    if conflicts:
+                        st.error(f"⚠️ **Terdeteksi {len(conflicts)} jadwal yang bentrok!**")
+                        with st.expander("📋 Detail Bentrokan Jadwal", expanded=True):
+                            for conflict in conflicts:
+                                st.warning(f"**{conflict['day']} - {conflict['time']}**")
+                                for course in conflict['courses']:
+                                    st.write(f"  • {course}")
+                    else:
+                        st.success("✅ Tidak ada jadwal yang bentrok")
+                    
+                    st.markdown("---")
+                    
+                    # Build schedule dict
+                    schedule_dict = {"Time": []}
+                    for day_label in day_labels:
+                        schedule_dict[day_label] = []
+                    
+                    for shift in schedule_data:
+                        time = shift.get('shift_time', 'N/A')
+                        schedule_dict["Time"].append(time)
+                        
+                        shift_data = shift.get('shift_data', {})
+                        for day, day_label in zip(days, day_labels):
+                            courses = shift_data.get(day, [])
+                            if courses:
+                                course_details = []
+                                for c in courses:
+                                    course_name = c.get('course_name', 'Unknown')
+                                    start = c.get('start_hour', 'N/A')
+                                    end = c.get('end_hour', 'N/A')
+                                    sks = c.get('credit', '')
+                                    course_details.append(f"{course_name}\n({start}-{end}, {sks} SKS)")
+                                
+                                # Add conflict indicator
+                                if len(courses) > 1:
+                                    cell_value = "⚠️ BENTROK!\n" + "\n---\n".join(course_details)
+                                else:
+                                    cell_value = "\n".join(course_details)
+                                schedule_dict[day_label].append(cell_value)
+                            else:
+                                schedule_dict[day_label].append("")
+                    
+                    # Create DataFrame
+                    df_schedule = pd.DataFrame(schedule_dict)
+                    
+                    # Display with custom styling
+                    st.dataframe(
+                        df_schedule,
+                        use_container_width=True,
+                        height=600,
+                        hide_index=True
+                    )
+                    
+                    st.markdown("---")
+            
             # Table view
             for course in enrolled_courses:
                 with st.container():

@@ -487,6 +487,45 @@ class SiramaClient:
             logger.error(f"Get registration schedule error: {str(e)}")
             return {"success": False, "message": str(e)}
     
+    def get_schedule(self) -> Dict[str, Any]:
+        """
+        Get student's course schedule (timetable)
+        
+        Returns:
+            Dict containing schedule data organized by shifts and days
+        """
+        if not self.token:
+            return {"success": False, "message": "Not authenticated"}
+        
+        try:
+            headers = {
+                **DEFAULT_HEADERS,
+                "Authorization": f"Bearer {self.token}"
+            }
+            
+            # Endpoint untuk schedule (dari API call user)
+            schedule_hash = "cd3ba337b4dbea0b0976f40e77cad6d5ab264b2e"
+            url = f"https://service-v2.telkomuniversity.ac.id/read/api/read/{schedule_hash}/"
+            
+            response = self.session.get(
+                url,
+                headers=headers,
+                timeout=30
+            )
+            
+            response.raise_for_status()
+            data = response.json()
+            
+            logger.info(f"Schedule retrieved: {len(data)} time slots")
+            return {
+                "success": True,
+                "schedule": data
+            }
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Get schedule error: {str(e)}")
+            return {"success": False, "message": str(e)}
+    
     def logout(self):
         """Clear session and token"""
         self.token = None
