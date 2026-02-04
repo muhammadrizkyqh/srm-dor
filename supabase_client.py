@@ -172,69 +172,6 @@ class SupabaseClient:
             logger.error(f"Delete account error: {str(e)}")
             return {"success": False, "message": str(e)}
     
-    # =============== COURSE TARGET MANAGEMENT ===============
-    
-    def add_course_target(self, account_id: str, course_id: str, course_name: str, 
-                          priority: int = 1, auto_enroll: bool = True) -> Dict[str, Any]:
-        """Add course target"""
-        try:
-            data = {
-                "account_id": account_id,
-                "course_id": course_id,
-                "course_name": course_name,
-                "priority": priority,
-                "auto_enroll": auto_enroll
-            }
-            
-            response = self.client.table("course_targets").insert(data).execute()
-            logger.info(f"Course target added: {course_name}")
-            
-            return {
-                "success": True,
-                "target": response.data[0] if response.data else None
-            }
-        except Exception as e:
-            logger.error(f"Add course target error: {str(e)}")
-            return {"success": False, "message": str(e)}
-    
-    def get_course_targets(self, account_id: str, auto_enroll_only: bool = False) -> List[Dict[str, Any]]:
-        """Get course targets for an account"""
-        try:
-            query = self.client.table("course_targets").select("*").eq("account_id", account_id)
-            
-            if auto_enroll_only:
-                query = query.eq("auto_enroll", True)
-            
-            response = query.order("priority").execute()
-            return response.data
-        except Exception as e:
-            logger.error(f"Get course targets error: {str(e)}")
-            return []
-    
-    def update_course_target(self, target_id: str, **kwargs) -> Dict[str, Any]:
-        """Update course target"""
-        try:
-            response = self.client.table("course_targets").update(kwargs).eq("id", target_id).execute()
-            logger.info(f"Course target updated: {target_id}")
-            
-            return {
-                "success": True,
-                "target": response.data[0] if response.data else None
-            }
-        except Exception as e:
-            logger.error(f"Update course target error: {str(e)}")
-            return {"success": False, "message": str(e)}
-    
-    def delete_course_target(self, target_id: str) -> Dict[str, Any]:
-        """Delete course target"""
-        try:
-            self.client.table("course_targets").delete().eq("id", target_id).execute()
-            logger.info(f"Course target deleted: {target_id}")
-            return {"success": True}
-        except Exception as e:
-            logger.error(f"Delete course target error: {str(e)}")
-            return {"success": False, "message": str(e)}
-    
     # =============== ENROLLMENT LOGS ===============
     
     def log_enrollment(self, account_id: str, action: str, course_id: str, 

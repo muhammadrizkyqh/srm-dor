@@ -107,7 +107,7 @@ def main():
         # Navigation
         page = st.radio(
             "Navigation",
-            ["📊 Dashboard", "👥 Manage Accounts", "🎯 Target Courses", "🚀 Auto-Enroll", "📋 Logs"],
+            ["📊 Dashboard", "👥 Manage Accounts", "📋 Logs"],
             label_visibility="collapsed"
         )
         
@@ -124,10 +124,6 @@ def main():
         show_dashboard()
     elif page == "👥 Manage Accounts":
         show_accounts_page()
-    elif page == "🎯 Target Courses":
-        show_targets_page()
-    elif page == "🚀 Auto-Enroll":
-        show_auto_enroll_page()
     elif page == "📋 Logs":
         show_logs_page()
 
@@ -141,7 +137,7 @@ def show_dashboard():
     accounts = st.session_state.supabase.get_accounts(st.session_state.user.id)
     
     # Stats cards
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         st.metric("Total Accounts", len(accounts))
@@ -151,13 +147,6 @@ def show_dashboard():
         st.metric("Active Accounts", active_accounts)
     
     with col3:
-        total_targets = 0
-        for account in accounts:
-            targets = st.session_state.supabase.get_course_targets(account["id"])
-            total_targets += len(targets)
-        st.metric("Target Courses", total_targets)
-    
-    with col4:
         total_logs = 0
         for account in accounts:
             logs = st.session_state.supabase.get_enrollment_logs(account["id"], limit=1000)
@@ -169,19 +158,15 @@ def show_dashboard():
     # Recent activity
     st.subheader("📌 Quick Actions")
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     
     with col1:
         if st.button("➕ Add New Account", use_container_width=True):
             st.switch_page("pages/1_Manage_Accounts.py")
     
     with col2:
-        if st.button("🎯 Set Targets", use_container_width=True):
-            st.switch_page("pages/2_Target_Courses.py")
-    
-    with col3:
-        if st.button("🚀 Run Enrollment", use_container_width=True):
-            st.switch_page("pages/3_Auto_Enroll.py")
+        if st.button("📚 Manage Courses", use_container_width=True):
+            st.switch_page("pages/2_Manage_Courses.py")
     
     st.markdown("---")
     
@@ -225,18 +210,6 @@ def show_accounts_page():
     """Manage accounts page - placeholder"""
     st.title("👥 Manage SIRAMA Accounts")
     st.info("This page will be implemented in pages/1_Manage_Accounts.py")
-
-
-def show_targets_page():
-    """Target courses page - placeholder"""
-    st.title("🎯 Target Courses")
-    st.info("This page will be implemented in pages/2_Target_Courses.py")
-
-
-def show_auto_enroll_page():
-    """Auto-enroll page - placeholder"""
-    st.title("🚀 Auto-Enroll")
-    st.info("This page will be implemented in pages/3_Auto_Enroll.py")
 
 
 def show_logs_page():
